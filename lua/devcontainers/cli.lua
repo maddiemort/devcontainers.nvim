@@ -26,6 +26,7 @@ local function overseer_task(cmd, opts)
 
     -- Because stderr/stdout are interleaved we must parse JSONs from output
     local overseer = require('overseer')
+    local jsons = {}
     local task = overseer.new_task {
         cmd = cmd,
         name = opts.name,
@@ -37,16 +38,15 @@ local function overseer_task(cmd, opts)
             -- { 'on_output_parse', parser = { jsons = { 'extract_json' } } },
             {
                 'on_output_parse',
-                parser = {
-                    'extract',
-                    {
-                        postprocess = function(data)
-                            data.json = vim.F.npcall(vim.json.decode, data.json)
-                        end,
-                    },
-                    '(%b{})',
-                    'json',
-                },
+                parser = function(line)
+                    local str = line:match('(%b{})')
+                    local decoded = str and vim.F.npcall(vim.json.decode, str)
+                    if decoded then
+                        table.insert(jsons, decoded)
+                    else
+                        log.warn('could not decode JSON: %s', utils.lazy_inspect(out))
+                    end
+                end
             },
         },
     }
@@ -56,11 +56,11 @@ local function overseer_task(cmd, opts)
     local result = coroutine.yield()
     task:unsubscribe('on_complete', resume)
 
-    -- Use last non-empty JSONs as result
+    -- Use last non-empty JSON as result
     local json
-    for _, res in ipairs(task.result) do
-        if res.json and res.json ~= vim.empty_dict() then
-            json = res.json
+    for _, res in ipairs(jsons) do
+        if res ~= vim.empty_dict() then
+            json = res
         end
     end
 
