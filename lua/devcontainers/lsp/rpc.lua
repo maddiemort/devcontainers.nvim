@@ -195,6 +195,13 @@ function M.wrap_client_to_server(rpc, mappings, fn)
             -- if it ever becomes bottleneck we may try to limit it to only the `params` that we modify.
             -- `noref=true` seems to be more performant for LSP from my benchmarks.
             params = vim.deepcopy(params, true)
+			
+			-- (Based)pyright checks whether LSP is running via kill(PID, 0), fails because container doesn't have host PID or smth. See: https://github.com/microsoft/pyright/discussions/5917
+			if method == "initialize" and params and params.processId then
+				log.trace("Nullifying processId in initialize request to prevent container PID namespace issues")
+				params.processId = vim.NIL
+			end
+
             log.debug('client2server:request:%s', method)
             log.trace('params=%s', utils.lazy_inspect_oneline(params))
             params = apply(params, fn, {

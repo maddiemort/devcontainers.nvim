@@ -211,7 +211,7 @@ end
 ---@param workspace_dir string
 ---@return boolean
 function M.container_is_running(workspace_dir)
-    local ok = pcall(M.exec, workspace_dir, 'echo')
+    local ok = pcall(M.exec, workspace_dir, {'echo'})
     return ok
 end
 
