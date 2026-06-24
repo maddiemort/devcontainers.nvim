@@ -166,10 +166,10 @@ function M.devcontainer_up(workspace_dir)
         }
         if ok then
             local msg = string.format('Starting devcontainer in %s: OK', short_dir)
-            vim.notify(msg, nil, { replace = notif and notif.id })
+            vim.notify(msg, nil, { replace = notif })
         else
             local msg = string.format('Starting devcontainer in %s: FAILED: code=%d status=%s', short_dir, result.code, vim.inspect(status))
-            vim.notify(msg, nil, { replace = notif and notif.id })
+            vim.notify(msg, nil, { replace = notif })
         end
     end
     return ret
