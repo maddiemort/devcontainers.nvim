@@ -155,7 +155,7 @@ function M.devcontainer_up(workspace_dir)
         }
     else
         local short_dir = vim.fn.pathshorten(workspace_dir)
-        local notif = vim.notify(string.format('Starting devcontainer in %s', short_dir))
+        local notif = vim.notify(string.format('Starting devcontainer in %s...', short_dir), vim.log.levels.INFO)
         local result = utils.system(cmd)
         local ok, status = up_status(result)
         ret = {
@@ -165,11 +165,11 @@ function M.devcontainer_up(workspace_dir)
             status = status
         }
         if ok then
-            local msg = string.format('Starting devcontainer in %s: OK', short_dir)
-            vim.notify(msg, nil, { replace = notif })
+            local msg = string.format('Started devcontainer in %s', short_dir)
+            vim.notify(msg, vim.log.levels.INFO, { id = notif, replace = notif })
         else
-            local msg = string.format('Starting devcontainer in %s: FAILED: code=%d status=%s', short_dir, result.code, vim.inspect(status))
-            vim.notify(msg, nil, { replace = notif })
+            local msg = string.format('Failed to start devcontainer in %s: code=%d status=%s', short_dir, result.code, vim.inspect(status))
+            vim.notify(msg, vim.log.levels.ERROR, { id = notif, replace = notif })
         end
     end
     return ret
